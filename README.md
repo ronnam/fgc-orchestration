@@ -38,7 +38,7 @@ Arquitetura de **microsserviços orientada a eventos**, com comunicação assín
 └────────────────┘                            └──────────────────┘
 ```
 `
-```
+
 
 
 ### Fluxos
