@@ -1,0 +1,92 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: fgc-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fgc_network
+
+  fgc-users-api:
+    build:
+      context: ../fgc-users-api
+      dockerfile: Dockerfile
+    container_name: fgc-users-api
+    ports:
+      - "5038:8080"
+    environment:
+      - RabbitMq__Host=rabbitmq
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fgc_network
+
+  fgc-catalog-api:
+    build:
+      context: ../fgc-catalog-api
+      dockerfile: Dockerfile
+    container_name: fgc-catalog-api
+    ports:
+      - "5070:8080"
+    environment:
+      - RabbitMq__Host=rabbitmq
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fgc_network
+
+  fgc-payments-api:
+    build:
+      context: ../fgc-payments-api
+      dockerfile: Dockerfile
+    container_name: fgc-payments-api
+    ports:
+      - "5050:8080"
+    environment:
+      - RabbitMq__Host=rabbitmq
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fgc_network
+
+  fgc-notifications-api:
+    build:
+      context: ../fgc-notifications-api
+      dockerfile: Dockerfile
+    container_name: fgc-notifications-api
+    ports:
+      - "5060:8080"
+    environment:
+      - MassTransit__Host=rabbitmq
+      - MassTransit__VirtualHost=/
+      - MassTransit__Username=admin
+      - MassTransit__Password=admin
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fgc_network
+
+networks:
+  fgc_network:
+    driver: bridge
