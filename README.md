@@ -16,25 +16,29 @@ Arquitetura de **microsserviços orientada a eventos**, com comunicação assín
 ---
 
 ## 🏗️ Arquitetura
-┌──────────────┐     UserCreatedEvent      ┌──────────────────┐
-│  Users API   │ ───────────────────────►  │  Notifications   │
-│  (port 5038) │                           │  API (port 5060) │
-└──────┬───────┘                           └──────────────────┘
-│
-│ JWT Auth
-▼
-┌──────────────┐     OrderPlacedEvent       ┌──────────────────┐
-│  Catalog API │ ───────────────────────►  │  Payments API    │
-│  (port 5070) │                           │  (port 5050)     │
-└──────┬───────┘                           └────────┬─────────┘
-│                                            │
-│     PaymentProcessedEvent  ◄────────────────┘
-│     (Approved/Rejected)
-▼
-┌──────────────┐     PaymentProcessedEvent  ┌──────────────────┐
-│   Catalog    │ ◄───────────────────────── │  Notifications   │
-│  (add lib)   │                            │  (e-mail compra) │
-└──────────────┘                            └──────────────────┘
+```text
+┌────────────────┐     UserCreatedEvent      ┌──────────────────┐
+│  Users API     │ ───────────────────────►  │  Notifications   │
+│  (port 5038)   │                           │  API (port 5060) │
+└───────┬────────┘                           └──────────────────┘
+        │
+        │ JWT Auth
+        ▼
+┌────────────────┐     OrderPlacedEvent      ┌──────────────────┐
+│  Catalog API   │ ───────────────────────►  │  Payments API    │
+│  (port 5070)   │                           │  (port 5050)     │
+└───────┬────────┘                           └─────────┬────────┘
+        │                                              │
+        │        PaymentProcessedEvent  ◄──────────────┘
+        │        (Approved/Rejected)
+        ▼
+┌────────────────┐     PaymentProcessedEvent  ┌──────────────────┐
+│   Catalog      │ ◄───────────────────────── │  Notifications   │
+│  (add lib)     │                            │  (e-mail compra) │
+└────────────────┘                            └──────────────────┘
+```
+`
+```
 
 
 ### Fluxos
