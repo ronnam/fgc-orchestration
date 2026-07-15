@@ -193,7 +193,7 @@ cd fgc-notifications-api && dotnet test
 ```
 
 ## 🎥 Demonstração
-[Link do vídeo de apresentação - 20 minutos]
+[https://youtu.be/eiJI9z8NcI4]
 
 ## 📄 Relatório de Entrega
 Grupo: Squad 8 – Turma 12NETT
