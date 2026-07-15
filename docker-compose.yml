@@ -20,6 +20,7 @@ services:
     build:
       context: ../fgc-users-api
       dockerfile: Dockerfile
+    image: fgc-users-api:latest
     container_name: fgc-users-api
     ports:
       - "5038:8080"
@@ -37,6 +38,7 @@ services:
     build:
       context: ../fgc-catalog-api
       dockerfile: Dockerfile
+    image: fgc-catalog-api:latest
     container_name: fgc-catalog-api
     ports:
       - "5070:8080"
@@ -54,6 +56,7 @@ services:
     build:
       context: ../fgc-payments-api
       dockerfile: Dockerfile
+    image: fgc-payments-api:latest
     container_name: fgc-payments-api
     ports:
       - "5050:8080"
@@ -71,6 +74,7 @@ services:
     build:
       context: ../fgc-notifications-api
       dockerfile: Dockerfile
+    image: fgc-notifications-api:latest
     container_name: fgc-notifications-api
     ports:
       - "5060:8080"

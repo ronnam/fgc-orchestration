@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fgc-users-api-config
+  namespace: fgc
+  labels:
+    app: fgc-users-api
+data:
+  RabbitMq__Host: "rabbitmq"
+  Jwt__Issuer: "Fgc.UsersAPI"
+  Jwt__Audience: "Fgc.CatalogAPI"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fgc-catalog-api-config
+  namespace: fgc
+  labels:
+    app: fgc-catalog-api
+data:
+  RabbitMq__Host: "rabbitmq"
+  Jwt__Issuer: "Fgc.UsersAPI"
+  Jwt__Audience: "Fgc.CatalogAPI"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fgc-payments-api-config
+  namespace: fgc
+  labels:
+    app: fgc-payments-api
+data:
+  RabbitMq__Host: "rabbitmq"
+  Jwt__Issuer: "Fgc.UsersAPI"
+  Jwt__Audience: "Fgc.PaymentsAPI"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fgc-notifications-api-config
+  namespace: fgc
+  labels:
+    app: fgc-notifications-api
+data:
+  MassTransit__Host: "rabbitmq"
+  MassTransit__VirtualHost: "/"

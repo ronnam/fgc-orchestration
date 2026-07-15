@@ -37,9 +37,6 @@ Arquitetura de **microsserviços orientada a eventos**, com comunicação assín
 │  (add lib)     │                            │  (e-mail compra) │
 └────────────────┘                            └──────────────────┘
 ```
-`
-
-
 
 ### Fluxos
 
@@ -77,34 +74,111 @@ Arquitetura de **microsserviços orientada a eventos**, com comunicação assín
 ### Subir todos os serviços
 ```bash
 docker-compose up -d --build
+```
 Isso sobe os 5 serviços + RabbitMQ:
-ServiçoPortaDescriçãoRabbitMQ5672 (AMQP), 15672 (UI)Message brokerfgc-users-api5038Cadastro e autenticaçãofgc-catalog-api5070CRUD de jogos e comprafgc-payments-api5050Processamento de pagamentofgc-notifications-api5060Notificações via logVerificar logsdocker-compose logs -fAcessar interfaces
-Swagger Users API: http://localhost:5038/swagger
-Swagger Catalog API: http://localhost:5070/swagger
-Swagger Payments API: http://localhost:5050/swagger
-RabbitMQ Management: http://localhost:15672 (admin/admin)
-Parar tudodocker-compose down☸️ KubernetesPré-requisitos
-Cluster Kubernetes local (Kind, Minikube, k3d ou Docker Desktop)
-kubectl configurado
-Estrutura dos manifestosCada repositório de microsserviço possui sua própria pasta /k8s com:
-deployment.yaml — Deployment com probes de liveness/readiness
-service.yaml — Service do tipo ClusterIP
-configmap.yaml — Configurações não sensíveis
-secret.yaml — Credenciais e dados sensíveis
-Deploy no clusterPara cada serviço, execute na raiz do repositório correspondente:kubectl apply -f k8s/Ou, a partir deste repositório de orquestração, aponte para cada pasta:
 
+| Serviço | Porta | Descrição |
+|---|---|---|
+| RabbitMQ | 5672 (AMQP), 15672 (UI) | Message broker |
+| fgc-users-api | 5038 | Cadastro e autenticação |
+| fgc-catalog-api | 5070 | CRUD de jogos e compra |
+| fgc-payments-api | 5050 | Processamento de pagamento |
+| fgc-notifications-api | 5060 | Notificações via log |
+
+Verificar logs: `docker-compose logs -f`
+
+Acessar interfaces:
+- Swagger Users API: http://localhost:5038/swagger
+- Swagger Catalog API: http://localhost:5070/swagger
+- Swagger Payments API: http://localhost:5050/swagger
+- RabbitMQ Management: http://localhost:15672 (admin/admin)
+
+Parar tudo: `docker-compose down`
+
+---
+
+## ☸️ Kubernetes
+
+### Pré-requisitos
+- Cluster Kubernetes local (Kind, Minikube, k3d ou Docker Desktop)
+- kubectl configurado
+- Os 4 repositórios de serviço (`fgc-users-api`, `fgc-catalog-api`, `fgc-payments-api`, `fgc-notifications-api`) clonados como pastas irmãs de `fgc-orchestration` (mesmo layout usado pelo `docker-compose.yml`)
+
+### Estrutura dos manifestos
+
+Este repositório consolida em `k8s/` cópias dos manifests de cada serviço (a fonte de cada um continua também em `fgc-<serviço>-api/k8s/`, para quem quiser aplicar um serviço isolado), agrupados em um único arquivo por tipo de recurso — todos no namespace `fgc`:
+
+- `00-namespace.yaml` — cria o namespace `fgc`
+- `deployment.yaml` — os 5 Deployments (RabbitMQ + as 4 APIs), cada um com suas probes de liveness/readiness
+- `service.yaml` — os 10 Services: um `ClusterIP` (comunicação interna entre pods) e um `NodePort` (acesso externo, similar às portas do `docker-compose.yml`) para cada um dos 5 acima
+- `configmap.yaml` — as 4 ConfigMaps das APIs, com as configurações não sensíveis (RabbitMQ não tem ConfigMap própria, usa `env:` direto no Deployment)
+- `secret.yaml` — as 4 Secrets das APIs, com credenciais e dados sensíveis (placeholders de projeto acadêmico)
+
+### Build e carga das imagens
+
+Como o projeto ainda não tem pipeline de CI/CD nem publica imagens em um registry (ver seção de testes), as imagens precisam ser buildadas localmente e disponibilizadas ao cluster:
+
+```powershell
+cd fgc-orchestration
+.\k8s\build-and-load-images.ps1
+```
+
+O script builda as 4 imagens (`fgc-<serviço>-api:latest`) a partir dos repositórios irmãos e, se detectar um cluster **kind** ou **minikube**, carrega as imagens automaticamente (`kind load docker-image` / `minikube image load`). No Kubernetes do **Docker Desktop** nenhuma ação extra é necessária, pois ele compartilha o cache local do Docker.
+
+### Deploy no cluster
+
+```bash
+kubectl apply -f k8s/
+kubectl get pods -n fgc
+```
+
+Alternativa, sem o namespace consolidado — aplicar cada serviço isoladamente a partir do seu próprio repositório:
+```bash
 kubectl apply -f ../fgc-users-api/k8s/
 kubectl apply -f ../fgc-catalog-api/k8s/
 kubectl apply -f ../fgc-payments-api/k8s/
 kubectl apply -f ../fgc-notifications-api/k8s/
+```
 
-Verificar podskubectl get podsAcessar serviços no clusterOs serviços se comunicam internamente pelos nomes do Kubernetes:
-http://fgc-users-api:80
-http://fgc-catalog-api:80
-http://fgc-payments-api:80
-http://fgc-notifications-api:80
-🔧 Variáveis de AmbienteRabbitMQ (comum a todos)
-VariávelDescriçãoPadrãoRabbitMq__HostHost do RabbitMQrabbitmqMassTransit__HostHost do RabbitMQ (Notifications)rabbitmqMassTransit__UsernameUsuário RabbitMQadminMassTransit__PasswordSenha RabbitMQadmin✅ TestesCada microsserviço possui testes unitários e/ou de integração:
+### Acessar serviços no cluster
+
+Internamente, os serviços se comunicam pelos nomes do Kubernetes:
+- http://fgc-users-api:80
+- http://fgc-catalog-api:80
+- http://fgc-payments-api:80
+- http://fgc-notifications-api:80
+
+Externamente, via os Services `NodePort`:
+
+| Serviço | NodePort | URL |
+|---|---|---|
+| fgc-users-api | 30038 | http://localhost:30038/swagger |
+| fgc-catalog-api | 30070 | http://localhost:30070/swagger |
+| fgc-payments-api | 30050 | http://localhost:30050/swagger |
+| fgc-notifications-api | 30060 | http://localhost:30060/health |
+| RabbitMQ Management | 30672 | http://localhost:30672 (admin/admin) |
+
+> Em kind/Docker Desktop o NodePort costuma responder direto em `localhost`. No minikube, use `minikube service <nome-do-service> -n fgc --url` ou `minikube tunnel` para obter a URL correta.
+
+---
+
+## 🔧 Variáveis de Ambiente
+
+RabbitMQ (comum a todos):
+
+| Variável | Descrição | Padrão |
+|---|---|---|
+| RabbitMq__Host | Host do RabbitMQ | rabbitmq |
+| MassTransit__Host | Host do RabbitMQ (Notifications) | rabbitmq |
+| MassTransit__Username | Usuário RabbitMQ | admin |
+| MassTransit__Password | Senha RabbitMQ | admin |
+
+---
+
+## ✅ Testes
+
+Cada microsserviço possui testes unitários e/ou de integração:
+```bash
 # Users API
 cd fgc-users-api && dotnet test
 
@@ -116,9 +190,13 @@ cd fgc-payments-api && dotnet test
 
 # Notifications API
 cd fgc-notifications-api && dotnet test
-🎥 Demonstração[Link do vídeo de apresentação - 20 minutos]📄 Relatório de Entrega
+```
+
+## 🎥 Demonstração
+[Link do vídeo de apresentação - 20 minutos]
+
+## 📄 Relatório de Entrega
 Grupo: Squad 8 – Turma 12NETT
 Participantes: Ronnam de Lima da Silva, Yan Santos Wendt
 Repositórios: Links na seção acima
 Vídeo: Link acima
-
