@@ -1,0 +1,192 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: fgc
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3-management
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: "admin"
+            - name: RABBITMQ_DEFAULT_PASS
+              value: "admin"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fgc-users-api
+  namespace: fgc
+  labels:
+    app: fgc-users-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fgc-users-api
+  template:
+    metadata:
+      labels:
+        app: fgc-users-api
+    spec:
+      containers:
+        - name: fgc-users-api
+          image: fgc-users-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: fgc-users-api-config
+            - secretRef:
+                name: fgc-users-api-secret
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fgc-catalog-api
+  namespace: fgc
+  labels:
+    app: fgc-catalog-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fgc-catalog-api
+  template:
+    metadata:
+      labels:
+        app: fgc-catalog-api
+    spec:
+      containers:
+        - name: fgc-catalog-api
+          image: fgc-catalog-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: fgc-catalog-api-config
+            - secretRef:
+                name: fgc-catalog-api-secret
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fgc-payments-api
+  namespace: fgc
+  labels:
+    app: fgc-payments-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fgc-payments-api
+  template:
+    metadata:
+      labels:
+        app: fgc-payments-api
+    spec:
+      containers:
+        - name: fgc-payments-api
+          image: fgc-payments-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: fgc-payments-api-config
+            - secretRef:
+                name: fgc-payments-api-secret
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fgc-notifications-api
+  namespace: fgc
+  labels:
+    app: fgc-notifications-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fgc-notifications-api
+  template:
+    metadata:
+      labels:
+        app: fgc-notifications-api
+    spec:
+      containers:
+        - name: fgc-notifications-api
+          image: fgc-notifications-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: fgc-notifications-api-config
+            - secretRef:
+                name: fgc-notifications-api-secret
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
