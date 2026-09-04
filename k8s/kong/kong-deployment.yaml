@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fgc-kong
+  namespace: fgc
+  labels:
+    app: fgc-kong
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fgc-kong
+  template:
+    metadata:
+      labels:
+        app: fgc-kong
+    spec:
+      containers:
+        - name: kong
+          image: kong:3.5
+          ports:
+            - name: proxy
+              containerPort: 8000
+            - name: admin
+              containerPort: 8001
+          env:
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: "/etc/kong/kong.yml"
+          volumeMounts:
+            - name: kong-config
+              mountPath: /etc/kong
+      volumes:
+        - name: kong-config
+          configMap:
+            name: kong-config
