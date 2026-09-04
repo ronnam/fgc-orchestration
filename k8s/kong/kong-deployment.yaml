@@ -1,0 +1,4 @@
+notepad k8s\kong\kong-config.yaml
+notepad k8s\kong\kong-proxy-service.yaml
+notepad k8s\kong\kong-admin-service.yaml
+notepad k8s\kong\kong-jwt-secret.yaml
