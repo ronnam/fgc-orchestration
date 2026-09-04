@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin
+  namespace: fgc
+spec:
+  type: ClusterIP
+  selector:
+    app: fgc-kong
+  ports:
+    - name: admin
+      port: 8001
+      targetPort: 8001

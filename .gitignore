@@ -427,3 +427,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Arquivos locais de segredos (nunca versionar)
+secret.local.yaml
+*.local.yaml

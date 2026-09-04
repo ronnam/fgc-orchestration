@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: fgc
+data:
+  kong.yml: |
+    _format_version: "2.1"
+    services:
+      - name: users-service
+        url: http://fgc-users-api:80
+        routes:
+          - name: users-route
+            paths:
+              - /users
+      - name: catalog-service
+        url: http://fgc-catalog-api:80
+        routes:
+          - name: catalog-route
+            paths:
+              - /catalog
+    plugins:
+      - name: jwt
+        config:
+          key_claim_name: iss
+          secret_is_base64: false
