@@ -28,9 +28,20 @@ spec:
               value: "off"
             - name: KONG_DECLARATIVE_CONFIG
               value: "/etc/kong/kong.yml"
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kong-jwt-secret
+                  key: JWT_KEY
+          command:
+            - /bin/sh
+            - -c
+            - |
+              sed "s|__JWT_KEY__|${JWT_KEY}|g" /etc/kong-config/kong.template.yml > /etc/kong/kong.yml
+              exec /docker-entrypoint.sh kong docker-start
           volumeMounts:
             - name: kong-config
-              mountPath: /etc/kong
+              mountPath: /etc/kong-config
       volumes:
         - name: kong-config
           configMap:

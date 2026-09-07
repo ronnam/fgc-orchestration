@@ -4,7 +4,7 @@ metadata:
   name: kong-config
   namespace: fgc
 data:
-  kong.yml: |
+  kong.template.yml: |
     _format_version: "2.1"
     services:
       - name: users-service
@@ -24,3 +24,8 @@ data:
         config:
           key_claim_name: iss
           secret_is_base64: false
+    consumers:
+      - username: fgc-users-api
+        jwt_secrets:
+          - key: Fgc.UsersAPI
+            secret: "__JWT_KEY__"
