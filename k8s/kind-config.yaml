@@ -1,0 +1,27 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: desktop
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 30080
+        protocol: TCP
+      - containerPort: 30038
+        hostPort: 30038
+        protocol: TCP
+      - containerPort: 30070
+        hostPort: 30070
+        protocol: TCP
+      - containerPort: 30050
+        hostPort: 30050
+        protocol: TCP
+      - containerPort: 39090
+        hostPort: 39090
+        protocol: TCP
+      - containerPort: 33000
+        hostPort: 33000
+        protocol: TCP
+      - containerPort: 30672
+        hostPort: 30672
+        protocol: TCP
