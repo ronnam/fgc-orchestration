@@ -10,9 +10,15 @@ data:
       - name: users-service
         url: http://fgc-users-api:80
         routes:
+          - name: users-auth-route
+            paths:
+              - /auth
+            strip_path: false
           - name: users-route
             paths:
               - /users
+              - /admin/users
+            strip_path: false
       - name: catalog-service
         url: http://fgc-catalog-api:80
         routes:
@@ -21,6 +27,12 @@ data:
               - /catalog
     plugins:
       - name: jwt
+        route: users-route
+        config:
+          key_claim_name: iss
+          secret_is_base64: false
+      - name: jwt
+        route: catalog-route
         config:
           key_claim_name: iss
           secret_is_base64: false
