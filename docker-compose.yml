@@ -69,28 +69,6 @@ services:
         condition: service_healthy
     networks:
       - fgc_network
-
-  fgc-notifications-api:
-    build:
-      context: ../fgc-notifications-api
-      dockerfile: Dockerfile
-    image: fgc-notifications-api:latest
-    container_name: fgc-notifications-api
-    ports:
-      - "5060:8080"
-    environment:
-      - MassTransit__Host=rabbitmq
-      - MassTransit__VirtualHost=/
-      - MassTransit__Username=admin
-      - MassTransit__Password=admin
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - fgc_network
-
 networks:
   fgc_network:
     driver: bridge
