@@ -189,7 +189,7 @@ cd fgc-serverless-function && dotnet test
 ```
 
 ## 🎥 Demonstração
-[LINK DO VÍDEO DA FASE 3 A INSERIR — gravar após finalizar implementação]
+https://youtu.be/wBkjgqAAfH4
 
 ## 📄 Relatório de Entrega
 Projeto: Individual – Turma 12NETT
