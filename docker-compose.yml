@@ -16,6 +16,21 @@ services:
     networks:
       - fgc_network
 
+  mongo:
+    image: mongo:7
+    container_name: fgc-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fgc_network
+
   fgc-users-api:
     build:
       context: ../fgc-users-api
@@ -72,3 +87,6 @@ services:
 networks:
   fgc_network:
     driver: bridge
+
+volumes:
+  mongo_data:
