@@ -59,13 +59,19 @@ services:
       - "5070:8080"
     environment:
       - RabbitMq__Host=rabbitmq
+      - ConnectionStrings__MongoDb=mongodb://fgc-mongo:27017
+      - MongoDb__DatabaseName=fgc_catalog
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
     depends_on:
       rabbitmq:
         condition: service_healthy
+      mongo:
+        condition: service_healthy
     networks:
       - fgc_network
+    volumes:
+      - catalog_data:/app/data
 
   fgc-payments-api:
     build:
@@ -90,3 +96,4 @@ networks:
 
 volumes:
   mongo_data:
+  catalog_data:
