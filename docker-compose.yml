@@ -30,6 +30,23 @@ services:
       retries: 5
     networks:
       - fgc_network
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: fgc-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'status'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   fgc-users-api:
     build:
@@ -63,10 +80,13 @@ services:
       - MongoDb__DatabaseName=fgc_catalog
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Redis=redis:6379,abortConnect=false
     depends_on:
       rabbitmq:
         condition: service_healthy
       mongo:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - fgc_network
@@ -90,6 +110,19 @@ services:
         condition: service_healthy
     networks:
       - fgc_network
+  redis:
+    image: redis:7-alpine
+    container_name: fgc-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fgc_network
 networks:
   fgc_network:
     driver: bridge
@@ -97,3 +130,4 @@ networks:
 volumes:
   mongo_data:
   catalog_data:
+  elastic_data:
