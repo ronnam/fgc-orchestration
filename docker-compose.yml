@@ -42,6 +42,8 @@ services:
       - "9200:9200"
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
+    networks:
+      - fgc_network
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'status'"]
       interval: 10s
@@ -81,6 +83,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__Redis=redis:6379,abortConnect=false
+      - Elasticsearch__Uri=http://fgc-elasticsearch:9200
     depends_on:
       rabbitmq:
         condition: service_healthy
