@@ -59,14 +59,16 @@ spec:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 20
             periodSeconds: 10
+            failureThreshold: 6
           livenessProbe:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 40
             periodSeconds: 20
+            failureThreshold: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -87,7 +89,7 @@ spec:
     spec:
       containers:
         - name: fgc-catalog-api
-          image: fgc-catalog-api:latest
+          image: fgcacrronnam.azurecr.io/fgc-catalog-api:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -100,14 +102,16 @@ spec:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 20
             periodSeconds: 10
+            failureThreshold: 6
           livenessProbe:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 40
             periodSeconds: 20
+            failureThreshold: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -141,14 +145,16 @@ spec:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 20
             periodSeconds: 10
+            failureThreshold: 6
           livenessProbe:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 40
             periodSeconds: 20
+            failureThreshold: 3
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -182,11 +188,13 @@ spec:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 20
             periodSeconds: 10
+            failureThreshold: 6
           livenessProbe:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 40
             periodSeconds: 20
+            failureThreshold: 3

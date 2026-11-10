@@ -431,3 +431,7 @@ FodyWeavers.xsd
 # Arquivos locais de segredos (nunca versionar)
 secret.local.yaml
 *.local.yaml
+
+# artefatos locais
+*.bak
+skus.json
