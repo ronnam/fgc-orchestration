@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
         - name: fgc-users-api
-          image: fgc-users-api:latest
+          image: fgcacrronnam.azurecr.io/fgc-users-api:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -132,7 +132,7 @@ spec:
     spec:
       containers:
         - name: fgc-payments-api
-          image: fgc-payments-api:latest
+          image: fgcacrronnam.azurecr.io/fgc-payments-api:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -175,7 +175,7 @@ spec:
     spec:
       containers:
         - name: fgc-notifications-api
-          image: fgc-notifications-api:latest
+          image: fgcacrronnam.azurecr.io/fgc-notifications-api:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
