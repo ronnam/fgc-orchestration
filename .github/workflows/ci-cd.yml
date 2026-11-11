@@ -1,0 +1,57 @@
+name: CI/CD - FGC Orchestration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: fgcacrronnam.azurecr.io
+  RESOURCE_GROUP: rg-fgc
+  CLUSTER_NAME: fgc-aks
+  NAMESPACE: fgc
+
+jobs:
+  validate:
+    name: Validar manifestos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar YAML
+        run: |
+          find k8s -name "*.yaml" | while read f; do
+            echo "validando $f"
+            python3 -c "import yaml,sys; list(yaml.safe_load_all(open('$f')))"
+          done
+
+  deploy:
+    name: Deploy no AKS
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+      - name: Aplicar manifestos
+        run: |
+          kubectl apply -f k8s/00-namespace.yaml
+          kubectl apply -f k8s/secret.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/pvc.yaml
+          kubectl apply -f k8s/mongodb.yaml
+          kubectl apply -f k8s/redis.yaml
+          kubectl apply -f k8s/elasticsearch.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/deployment.yaml
+      - name: Rollout status
+        run: |
+          kubectl rollout status deployment/mongodb -n ${{ env.NAMESPACE }} --timeout=240s
+          kubectl rollout status deployment/redis -n ${{ env.NAMESPACE }} --timeout=120s
+          kubectl rollout status deployment/fgc-catalog-api -n ${{ env.NAMESPACE }} --timeout=240s

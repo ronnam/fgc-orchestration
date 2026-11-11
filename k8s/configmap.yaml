@@ -21,6 +21,7 @@ data:
   RabbitMq__Host: "rabbitmq"
   Jwt__Issuer: "Fgc.UsersAPI"
   Jwt__Audience: "Fgc.CatalogAPI"
+  Elasticsearch__Uri: "http://elasticsearch:9200"
 ---
 apiVersion: v1
 kind: ConfigMap

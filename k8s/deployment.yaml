@@ -79,6 +79,11 @@ metadata:
     app: fgc-catalog-api
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: fgc-catalog-api
@@ -87,9 +92,19 @@ spec:
       labels:
         app: fgc-catalog-api
     spec:
+      initContainers:
+        - name: wait-for-elasticsearch
+          image: curlimages/curl:8.5.0
+          command:
+            - sh
+            - -c
+            - |
+              until curl -sf http://elasticsearch:9200/_cluster/health; do
+                echo "aguardando elasticsearch..."; sleep 5;
+              done
       containers:
         - name: fgc-catalog-api
-          image: fgcacrronnam.azurecr.io/fgc-catalog-api:v1
+          image: fgcacrronnam.azurecr.io/fgc-catalog-api:v2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -98,6 +113,9 @@ spec:
                 name: fgc-catalog-api-config
             - secretRef:
                 name: fgc-catalog-api-secret
+          volumeMounts:
+            - name: catalog-data
+              mountPath: /app/data
           readinessProbe:
             httpGet:
               path: /health
@@ -112,6 +130,10 @@ spec:
             initialDelaySeconds: 40
             periodSeconds: 20
             failureThreshold: 3
+      volumes:
+        - name: catalog-data
+          persistentVolumeClaim:
+            claimName: catalog-sqlite-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment

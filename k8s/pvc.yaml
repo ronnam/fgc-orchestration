@@ -1,0 +1,13 @@
+# PVC do SQLite do CatalogAPI - jogos e bibliotecas precisam persistir
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: catalog-sqlite-pvc
+  namespace: fgc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed-csi
+  resources:
+    requests:
+      storage: 2Gi
