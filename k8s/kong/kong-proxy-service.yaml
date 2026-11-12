@@ -4,11 +4,10 @@ metadata:
   name: kong-proxy
   namespace: fgc
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: fgc-kong
   ports:
     - name: proxy
-      port: 8000
+      port: 80
       targetPort: 8000
-      nodePort: 30080
