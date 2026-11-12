@@ -11,3 +11,17 @@ spec:
   resources:
     requests:
       storage: 2Gi
+---
+# PVC do SQLite do UsersAPI - usuários e credenciais precisam persistir
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: users-db-pvc
+  namespace: fgc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed-csi
+  resources:
+    requests:
+      storage: 1Gi

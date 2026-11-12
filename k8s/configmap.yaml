@@ -9,6 +9,8 @@ data:
   RabbitMq__Host: "rabbitmq"
   Jwt__Issuer: "Fgc.UsersAPI"
   Jwt__Audience: "Fgc.CatalogAPI"
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ConnectionStrings__UserDb: "Data Source=/app/data/users.db"
 ---
 apiVersion: v1
 kind: ConfigMap
