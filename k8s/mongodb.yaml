@@ -50,14 +50,14 @@ spec:
               cpu: 500m
               memory: 512Mi
           readinessProbe:
-            exec:
-              command: ["mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+            tcpSocket:
+              port: 27017
             initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 6
           livenessProbe:
-            exec:
-              command: ["mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+            tcpSocket:
+              port: 27017
             initialDelaySeconds: 30
             periodSeconds: 20
             failureThreshold: 5
