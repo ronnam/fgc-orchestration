@@ -39,6 +39,24 @@ jobs:
         with:
           resource-group: ${{ env.RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
+      - name: Security Scan - Trivy (CatalogAPI)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/fgc-catalog-api:v2
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+      - name: Security Scan - Trivy (UsersAPI)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/fgc-users-api:v1
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
       - name: Aplicar manifestos
         run: |
           kubectl apply -f k8s/00-namespace.yaml
@@ -54,4 +72,5 @@ jobs:
         run: |
           kubectl rollout status deployment/mongodb -n ${{ env.NAMESPACE }} --timeout=240s
           kubectl rollout status deployment/redis -n ${{ env.NAMESPACE }} --timeout=120s
-          kubectl rollout status deployment/fgc-catalog-api -n ${{ env.NAMESPACE }} --timeout=240s
+          kubectl rollout status deployment/fgc-catalog-api -n ${{ env.NAMESPACE }} --timeout=240s 
+          kubectl rollout status deployment/fgc-users-api -n ${{ env.NAMESPACE }} --timeout=240s
