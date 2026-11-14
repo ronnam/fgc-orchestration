@@ -148,7 +148,6 @@ jobs:
           kubectl apply -f k8s/redis.yaml
           kubectl apply -f k8s/elasticsearch.yaml
           kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/kong/
 
       - name: Criar secrets a partir do GitHub
@@ -167,7 +166,7 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
           kubectl create secret generic fgc-payments-api-secret -n ${{ env.NAMESPACE }} \
-            --from-literal=ConnectionStrings__UserDb="${{ secrets.USERS_USERDB }}" \
+            --from-literal=ConnectionStrings__PaymentsDb="${{ secrets.PAYMENTS_DB }}" \
             --from-literal=Jwt__Key="${{ secrets.JWT_KEY }}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
@@ -175,6 +174,9 @@ jobs:
             --from-literal=MassTransit__Username="${{ secrets.RABBITMQ_USER }}" \
             --from-literal=MassTransit__Password="${{ secrets.RABBITMQ_PASS }}" \
             --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Apply deployments
+        run: kubectl apply -f k8s/deployment.yaml
 
       - name: Atualizar imagens (tag do commit)
         run: |
