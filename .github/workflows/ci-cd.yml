@@ -8,9 +8,8 @@ on:
 
 env:
   REGISTRY: fgcacrronnam.azurecr.io
-  RESOURCE_GROUP: rg-fgc
-  CLUSTER_NAME: fgc-aks
   NAMESPACE: fgc
+  DOTNET_VERSION: '8.0.x'
 
 jobs:
   validate:
@@ -25,42 +24,124 @@ jobs:
             python3 -c "import yaml,sys; list(yaml.safe_load_all(open('$f')))"
           done
 
+  build-and-test:
+    name: Build e Test - ${{ matrix.service }}
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: catalog
+            repo: ronnam/fgc-catalog-api
+            project: Fgc.Catalog/tests/Fgc.Catalog.Tests/Fgc.Catalog.Tests.csproj
+          - service: users
+            repo: ronnam/fgc-users-api
+            project: Fgc.Users/tests/Fgc.Users.Tests/Fgc.Users.Tests.csproj
+    steps:
+      - name: Checkout ${{ matrix.repo }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          token: ${{ secrets.GH_PAT }}
+          path: src
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        working-directory: src
+        run: dotnet restore
+
+      - name: Build
+        working-directory: src
+        run: dotnet build --no-restore -c Release
+
+      - name: Testes unitarios
+        working-directory: src
+        run: dotnet test ${{ matrix.project }} --no-build -c Release --logger "console;verbosity=normal"
+
+  build-and-push:
+    name: Build e Push - ${{ matrix.service }}
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: catalog
+            repo: ronnam/fgc-catalog-api
+            image: fgc-catalog-api
+          - service: users
+            repo: ronnam/fgc-users-api
+            image: fgc-users-api
+    steps:
+      - name: Checkout ${{ matrix.repo }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          token: ${{ secrets.GH_PAT }}
+          path: src
+
+      - name: Login no ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build e Push
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ matrix.image }}:${{ github.sha }} \
+                       -t ${{ env.REGISTRY }}/${{ matrix.image }}:latest \
+                       ./src
+          docker push ${{ env.REGISTRY }}/${{ matrix.image }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ matrix.image }}:latest
+
+  security-scan:
+    name: Trivy - ${{ matrix.service }}
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [fgc-catalog-api, fgc-users-api]
+    steps:
+      - name: Login no ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Scan ${{ matrix.service }}
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ matrix.service }}:${{ github.sha }}
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
   deploy:
     name: Deploy no AKS
-    needs: validate
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: security-scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - uses: azure/aks-set-context@v3
-        with:
-          resource-group: ${{ env.RESOURCE_GROUP }}
-          cluster-name: ${{ env.CLUSTER_NAME }}
-      - name: Security Scan - Trivy (CatalogAPI)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.REGISTRY }}/fgc-catalog-api:v2
-          format: 'table'
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - name: Security Scan - Trivy (UsersAPI)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.REGISTRY }}/fgc-users-api:v1
-          format: 'table'
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - name: Aplicar manifestos
+
+      - name: Configurar kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Apply manifestos
         run: |
           kubectl apply -f k8s/00-namespace.yaml
-          kubectl apply -f k8s/secret.yaml
           kubectl apply -f k8s/configmap.yaml
           kubectl apply -f k8s/pvc.yaml
           kubectl apply -f k8s/mongodb.yaml
@@ -68,9 +149,43 @@ jobs:
           kubectl apply -f k8s/elasticsearch.yaml
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/kong/
+
+      - name: Criar secrets a partir do GitHub
+        run: |
+          kubectl create secret generic fgc-users-api-secret -n ${{ env.NAMESPACE }} \
+            --from-literal=ConnectionStrings__UserDb="${{ secrets.USERS_USERDB }}" \
+            --from-literal=Jwt__Key="${{ secrets.JWT_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic fgc-catalog-api-secret -n ${{ env.NAMESPACE }} \
+            --from-literal=ConnectionStrings__CatalogDb="${{ secrets.CATALOG_DB }}" \
+            --from-literal=ConnectionStrings__MongoDb="${{ secrets.MONGODB_CONN }}" \
+            --from-literal=MongoDb__DatabaseName="${{ secrets.MONGODB_DBNAME }}" \
+            --from-literal=ConnectionStrings__Redis="${{ secrets.REDIS_CONN }}" \
+            --from-literal=Jwt__Key="${{ secrets.JWT_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic fgc-payments-api-secret -n ${{ env.NAMESPACE }} \
+            --from-literal=ConnectionStrings__UserDb="${{ secrets.USERS_USERDB }}" \
+            --from-literal=Jwt__Key="${{ secrets.JWT_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic fgc-notifications-api-secret -n ${{ env.NAMESPACE }} \
+            --from-literal=MassTransit__Username="${{ secrets.RABBITMQ_USER }}" \
+            --from-literal=MassTransit__Password="${{ secrets.RABBITMQ_PASS }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Atualizar imagens (tag do commit)
+        run: |
+          kubectl set image deployment/fgc-users-api \
+            fgc-users-api=${{ env.REGISTRY }}/fgc-users-api:${{ github.sha }} -n ${{ env.NAMESPACE }}
+          kubectl set image deployment/fgc-catalog-api \
+            fgc-catalog-api=${{ env.REGISTRY }}/fgc-catalog-api:${{ github.sha }} -n ${{ env.NAMESPACE }}
+
       - name: Rollout status
         run: |
           kubectl rollout status deployment/mongodb -n ${{ env.NAMESPACE }} --timeout=240s
           kubectl rollout status deployment/redis -n ${{ env.NAMESPACE }} --timeout=120s
-          kubectl rollout status deployment/fgc-catalog-api -n ${{ env.NAMESPACE }} --timeout=240s 
+          kubectl rollanc status deployment/fgc-catalog-api -n ${{ env.NAMESPACE }} --timeout=240s
           kubectl rollout status deployment/fgc-users-api -n ${{ env.NAMESPACE }} --timeout=240s
