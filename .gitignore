@@ -435,3 +435,7 @@ secret.local.yaml
 # artefatos locais
 *.bak
 skus.json
+
+kubeconfig-fgc
+*kubeconfig*
+
