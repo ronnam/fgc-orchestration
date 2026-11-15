@@ -52,11 +52,11 @@ jobs:
 
       - name: Restore
         working-directory: src
-        run: dotnet restore
+        run: dotnet restore ${{ matrix.project }}
 
       - name: Build
         working-directory: src
-        run: dotnet build --no-restore -c Release
+        run: dotnet build ${{ matrix.project }} --no-restore -c Release
 
       - name: Testes unitarios
         working-directory: src
@@ -189,5 +189,5 @@ jobs:
         run: |
           kubectl rollout status deployment/mongodb -n ${{ env.NAMESPACE }} --timeout=240s
           kubectl rollout status deployment/redis -n ${{ env.NAMESPACE }} --timeout=120s
-          kubectl rollanc status deployment/fgc-catalog-api -n ${{ env.NAMESPACE }} --timeout=240s
+          kubectl rollout status deployment/fgc-catalog-api -n ${{ env.NAMESPACE }} --timeout=240s
           kubectl rollout status deployment/fgc-users-api -n ${{ env.NAMESPACE }} --timeout=240s
