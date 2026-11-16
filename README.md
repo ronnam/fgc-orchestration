@@ -35,32 +35,67 @@ O projeto começou como um **monolito** na Fase 1, foi decomposto em **microsser
 
 ```mermaid
 flowchart TD
-    U[Usuário / Cliente] -->|HTTP| K[API Gateway Kong<br/>porta única + validação JWT]
+    U[Usuario / Cliente] -->|HTTP| K[API Gateway Kong<br/>porta unica + validacao JWT]
     K --> US[Users API<br/>port 5038]
     K --> CA[Catalog API<br/>port 5070]
     US --> MQ[(RabbitMQ<br/>Message Broker)]
     CA --> MQ
     MQ --> PA[Payments API<br/>port 5050]
     MQ --> FN[Azure Function<br/>ex-Notifications]
+```
 
 ### Infraestrutura da Fase 4
 
-GitHub (main)
-     │ push
-     ▼
-GitHub Actions ──► Build & Test ──► Containerização (tag)
-                                        │
-                                        ▼
-                                  Security Scan (Trivy)
-                                        │
-                                        ▼
-                                   Push → ACR
-                                        │
-                                        ▼
-                              Deploy AKS (Rolling Update)
+```mermaid
+flowchart TD
+    G[GitHub - branch main] -->|push| GA[GitHub Actions]
+    GA --> BT[Build e Test]
+    BT --> CT[Containerizacao com tag]
+    CT --> SS[Security Scan Trivy]
+    SS --> PU[Push para ACR]
+    PU --> DP[Deploy AKS<br/>Rolling Update]
+    CA2[Catalog API] <-->|indice games| ES[(Elasticsearch<br/>fuzzy + relevancia)]
+    U2[Usuarios] --> KP[Kong<br/>IP publico] --> SV[Servicos no cluster AKS]
+```
 
-CatalogAPI ◄──────────► Elasticsearch (índice games, fuzzy + relevância)
-Usuários ──► Kong (IP público do Load Balancer) ──► serviços no cluster AKS
+<details>
+<summary>Diagrama em texto (ASCII)</summary>
+
+```text
++----------------------------------------------+
+|            USUARIO / CLIENTE                 |
++----------------------+-----------------------+
+                       | HTTP
+                       v
++----------------------------------------------+
+|           API GATEWAY KONG                   |
+|      (porta unica + validacao JWT)           |
++-------------+-------------------+------------+
+              |                   |
+              v                   v
++-------------------+  +----------------------+
+|    USERS API      |  |    CATALOG API       |
+|    (port 5038)    |  |    (port 5070)       |
++---------+---------+  +----------+-----------+
+          |                       |
+          +-----------+-----------+
+                      v
++----------------------------------------------+
+|        RABBITMQ (Message Broker)             |
+|  UserCreated / OrderPlaced / PaymentProcessed|
++-------------+-------------------+------------+
+              |                   |
+              v                   v
++-------------------+  +----------------------+
+|   PAYMENTS API    |  |    AZURE CLOUD       |
+|    (port 5050)    |  | +------------------+ |
+|                   |  | | Serverless Func. | |
+|                   |  | |(ex-Notifications)| |
++-------------------+  | +------------------+ |
+                       +----------------------+
+```
+
+</details>
 
 
 ## 🔄 Fluxos de Negócio
@@ -346,16 +381,16 @@ A stack opera completa no ambiente **Docker Compose**. No cluster **AKS**, a ins
 |-----------------------|----------------------------------------------------------------------------------|-------------------------------|
 |**Users API**          |[fgc-users-api](https://github.com/ronnam/fgc-users-api)                          | .NET 8, EF Core, SQLite, JWT, |
 |                       |                                                                                  | MassTransit, Prometheus       |
-|---------------------  |-------------------------------------------------------------------               |------------------------------ |
+|---------------------  |-------------------------------------------------------------                     |------------------------------ |
 |                       |                                                                                  | .NET 8, EF Core, SQLite,      |
 |**Catalog API**        |      |[fgc-catalog-api](https://github.com/ronnam/fgc-catalog-api)               | MongoDB, Redis, Elasticsearch |
 |                       |                                                                                  | MassTransit, Prometheus       |
-|---------------------  |-------------------------------------------------------------------               |------------------------------ |
+|---------------------  |-------------------------------------------------------------                     |------------------------------ |
 |**Payments API**       |[fgc-payments-api](https://github.com/ronnam/fgc-payments-api)                    | .NET 8, MassTransit, SQLite   |
-|---------------------  |-------------------------------------------------------------------               |------------------------------ |
+|---------------------  |-------------------------------------------------------------                     |------------------------------ |
 |**Serverless Function**|[fgc-notifications-function](https://github.com/ronnam/fgc-notifications-function)| Azure Functions, .NET 8,      |
 |                       |                                                                                  | RabbitMQTrigger, Bicep        |
-|---------------------  |-------------------------------------------------------------------               |------------------------------ |
+|---------------------  |-------------------------------------------------------------                     |------------------------------ |
 |**Message Contracts**  |[fgc-message-contracts](https://github.com/ronnam/fgc-message-contracts)          | Pacote NuGet local de eventos |
 |---------------------  |-------------------------------------------------------------------               |------------------------------ |
 |                       |                                                                                  | Docker Compose, Kubernetes/AKS|
