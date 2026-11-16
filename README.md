@@ -381,18 +381,18 @@ A stack opera completa no ambiente **Docker Compose**. No cluster **AKS**, a ins
 |-----------------------|----------------------------------------------------------------------------------|-------------------------------|
 |**Users API**          |[fgc-users-api](https://github.com/ronnam/fgc-users-api)                          | .NET 8, EF Core, SQLite, JWT, |
 |                       |                                                                                  | MassTransit, Prometheus       |
-|---------------------  |-----------------------------------------------------------                       |------------------------------ |
+|---------------------  |---------------------------------------------------------                         |------------------------------ |
 |                       |                                                                                  | .NET 8, EF Core, SQLite,      |
 |**Catalog API**        |      |[fgc-catalog-api](https://github.com/ronnam/fgc-catalog-api)               | MongoDB, Redis, Elasticsearch |
 |                       |                                                                                  | MassTransit, Prometheus       |
-|---------------------  |-----------------------------------------------------------                       |------------------------------ |
+|---------------------  |---------------------------------------------------------                         |------------------------------ |
 |**Payments API**       |[fgc-payments-api](https://github.com/ronnam/fgc-payments-api)                    | .NET 8, MassTransit, SQLite   |
-|---------------------  |-----------------------------------------------------------                       |------------------------------ |
+|---------------------  |---------------------------------------------------------                         |------------------------------ |
 |**Serverless Function**|[fgc-notifications-function](https://github.com/ronnam/fgc-notifications-function)| Azure Functions, .NET 8,      |
 |                       |                                                                                  | RabbitMQTrigger, Bicep        |
-|---------------------  |-----------------------------------------------------------                       |------------------------------ |
+|---------------------  |---------------------------------------------------------                         |------------------------------ |
 |**Message Contracts**  |[fgc-message-contracts](https://github.com/ronnam/fgc-message-contracts)          | Pacote NuGet local de eventos |
-|---------------------  |------------------------------------------------------------                      |------------------------------ |
+|---------------------  |----------------------------------------------------------                        |------------------------------ |
 |                       |                                                                                  | Docker Compose, Kubernetes/AKS|
 |**Orquestração**       | *(este repositório)*                                                             | Kong, Elasticsearch, MongoDB, |
 |                       |                                                                                  | Redis, Prometheus, Grafana    |
