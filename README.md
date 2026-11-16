@@ -33,37 +33,15 @@ O projeto começou como um **monolito** na Fase 1, foi decomposto em **microsser
 
 ## 🏗️ Arquitetura
 
-┌──────────────────────────────────────────────────┐
-│                  USUÁRIO / CLIENTE               │
-└──────────────────────┬───────────────────────────┘
-                       │ HTTP
-                       ▼
-┌──────────────────────────────────────────────────┐
-│              API Gateway Kong                    │
-│        (porta única de entrada + JWT)            │
-└──────────┬───────────────────────┬───────────────┘
-           │                       │
-           ▼                       ▼
-┌──────────────────┐      ┌──────────────────┐
-│    Users API     │      │   Catalog API    │
-│   (port 5038)    │      │   (port 5070)    │
-└───────┬──────────┘      └────────┬─────────┘
-        │                         │
-        │      ┌──────────────────┘
-        │      ▼
-┌──────────────────────────────────────────────────┐
-│        RABBITMQ (Message Broker)                 │
-│  UserCreated / OrderPlaced / PaymentProcessed    │
-└──────┬───────────────────────────────┬───────────┘
-       │                               │
-       ▼                               ▼
-┌──────────────────┐      ┌──────────────────────────────┐
-│   Payments API   │      │         Azure Cloud          │
-│   (port 5050)    │      │  ┌──────────────────────┐    │
-└──────────────────┘      │  │ Serverless Function  │    │
-                          │  │   (ex-Notifications) │    │
-                          │  └──────────────────────┘    │
-                          └──────────────────────────────┘
+```mermaid
+flowchart TD
+    U[Usuário / Cliente] -->|HTTP| K[API Gateway Kong<br/>porta única + validação JWT]
+    K --> US[Users API<br/>port 5038]
+    K --> CA[Catalog API<br/>port 5070]
+    US --> MQ[(RabbitMQ<br/>Message Broker)]
+    CA --> MQ
+    MQ --> PA[Payments API<br/>port 5050]
+    MQ --> FN[Azure Function<br/>ex-Notifications]
 
 ### Infraestrutura da Fase 4
 
