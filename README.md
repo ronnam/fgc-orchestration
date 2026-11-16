@@ -392,7 +392,7 @@ A stack opera completa no ambiente **Docker Compose**. No cluster **AKS**, a ins
 |                       |                                                                                  | RabbitMQTrigger, Bicep        |
 |---------------------  |-------------------------------------------------------------                     |------------------------------ |
 |**Message Contracts**  |[fgc-message-contracts](https://github.com/ronnam/fgc-message-contracts)          | Pacote NuGet local de eventos |
-|---------------------  |-------------------------------------------------------------------               |------------------------------ |
+|---------------------  |-------------------------------------------------------------                     |------------------------------ |
 |                       |                                                                                  | Docker Compose, Kubernetes/AKS|
 |**Orquestração**       | *(este repositório)*                                                             | Kong, Elasticsearch, MongoDB, |
 |                       |                                                                                  | Redis, Prometheus, Grafana    |
