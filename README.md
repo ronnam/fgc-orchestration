@@ -449,11 +449,31 @@ Este repositório consolida em `k8s/` os manifestos de todos os componentes, agr
 - `configmap.yaml` — ConfigMaps com configurações não sensíveis
 - `secret.yaml.example` — **modelo** de Secrets (sem valores reais)
 - `kong/` — Manifestos do Kong API Gateway (deployment, service, config)
-- `monitoring/` — Manifestos de referência do Prometheus e Grafana
+- `monitoring/` — Prometheus e Grafana operacionais (ConfigMaps de datasource e dashboard, Deployment e Services)
 - `elasticsearch.yaml` — Elasticsearch
 - `redis.yaml` — Redis
 
 > O arquivo versionado é apenas um modelo. Os valores reais são injetados em tempo de execução a partir dos Secrets do Kubernetes.
+
+### Acesso ao Grafana
+
+O Grafana é exposto como **NodePort 32333** — a subscription Azure já consome
+os 3 IPs públicos permitidos na região `brazilsouth` (`kong-proxy`,
+`fgc-catalog-api` e o IP de saída do AKS). Usar LoadBalancer retornaria
+`PublicIPCountLimitReached`.
+
+Para acessar:
+
+```bash
+kubectl port-forward -n fgc svc/grafana 32333:80
+
+Abra `http://localhost:32333` e navegue até **Dashboards → FGC**.
+
+O datasource Prometheus e o dashboard são provisionados automaticamente via
+ConfigMaps — não é necessário configurar nada pela interface. O acesso anônimo
+está habilitado como **Viewer**, então o dashboard abre sem login; o usuário
+`admin` (senha no secret `grafana-admin`) é necessário apenas para editar.
+```
 
 ### Build e carga das imagens
 ```powershell
@@ -528,16 +548,18 @@ cd fgc-notifications-function && dotnet test
 
 ### Fase 2 — Microsserviços
 
-|               Requisito do PDF                 |                    Como foi atendido                           |         Evidência          |
-|------------------------------------------------|----------------------------------------------------------------|----------------------------|
-| Quatro microsserviços em repositórios próprios | Users, Catalog, Payments e Notifications autônomos             | Quatro repositórios        |
-| Fluxos orientados a eventos                    |`UserCreatedEvent`, `OrderPlacedEvent` e `PaymentProcessedEvent`| MassTransit + RabbitMQ     |
-| Dockerfile multistage por serviço              | Build otimizado para produção                                  | Dockerfile nos repositório |
-| Kubernetes com Deployments                     | Sem Pods isolados                                              |`k8s/deployment.yaml`       |
-| ConfigMaps                                     | URLs e nomes de filas                                          |`k8s/configmap.yaml`        |
-| Secrets                                        | Connection strings e chaves                                    |`k8s/secret.yaml.example`   |
-| Cluster Kubernetes local testado               | Kind, Minikube ou Docker Desktop                               | Manifestos aplicados       |
-| README em cada repositório                     | Finalidade e variáveis de ambiente                             | READMEs                    |
+|               Requisito do PDF                 |                    Como foi atendido                            |         Evidência                 |
+|------------------------------------------------|-----------------------------------------------------------------|-----------------------------------|
+| Quatro microsserviços em repositórios próprios | Users, Catalog, Payments e Notifications autônomos              | Quatro repositórios               |
+| Fluxos orientados a eventos                    |`UserCreatedEvent`, `OrderPlacedEvent` e `PaymentProcessedEvent` | MassTransit + RabbitMQ            |
+| Dockerfile multistage por serviço              | Build otimizado para produção                                   | Dockerfile nos repositório        |
+| Kubernetes com Deployments                     | Sem Pods isolados                                               |`k8s/deployment.yaml`              |
+| ConfigMaps                                     | URLs e nomes de filas                                           |`k8s/configmap.yaml`               |
+| Secrets                                        | Connection strings e chaves                                     |`k8s/secret.yaml.example`          |
+| Secret do Grafana                              | `grafana-admin` criado em runtime via pipeline, nunca versionado|`.github/workflows/ci-cd.yml`(passo|
+|                                                |                                                                 | *Create Grafana admin secret*)    |
+| Cluster Kubernetes local testado               | Kind, Minikube ou Docker Desktop                                | Manifestos aplicados              |
+| README em cada repositório                     | Finalidade e variáveis de ambiente                              | READMEs                           |
 
 ### Fase 3 — Gateway, Serverless, Observabilidade e Poliglota
 
@@ -592,10 +614,10 @@ Neste vídeo são demonstrados: o painel do Azure e os pods no cluster, o Live D
 |**Projeto**                 | Tech Challenge – Turma 12NETT                |
 |**Integrante (Fases 3 e 4)**| Ronnam de Lima da Silva                      |
 |**Usernames no Discord**    | ronnam0093                                   |
-|**Data**                    | 15 de novembro de 2026 |
-|**Documentação**            | Este README |
+|**Data**                    | 17 de novembro de 2026                       |
+|**Documentação**            | Este README                                  |
 |**Repositórios**            | Links na seção [Repositórios](#-repositórios)|
-|**Vídeo Fase 1**            |https://www.youtube.com/watch?v=M7qFwoBctmA|
-|**Vídeo Fase 2**            |https://www.youtube.com/watch?v=eiJI9z8NcI4|
-|**Vídeo Fase 3**            | https://youtu.be/wBkjgqAAfH4 |
-|**Vídeo Fase 4**            | [[LINK_DO_VIDEO_FASE_4]] |
+|**Vídeo Fase 1**            |https://www.youtube.com/watch?v=M7qFwoBctmA   |
+|**Vídeo Fase 2**            |https://www.youtube.com/watch?v=eiJI9z8NcI4   |
+|**Vídeo Fase 3**            | https://youtu.be/wBkjgqAAfH4                 |
+|**Vídeo Fase 4**            | [[LINK_DO_VIDEO_FASE_4]]                     |

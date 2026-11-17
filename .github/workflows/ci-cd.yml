@@ -149,6 +149,7 @@ jobs:
           kubectl apply -f k8s/elasticsearch.yaml
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/kong/
+          kubectl apply -f k8s/monitoring/
 
       - name: Criar secrets a partir do GitHub
         run: |
@@ -174,6 +175,13 @@ jobs:
             --from-literal=MassTransit__Username="${{ secrets.RABBITMQ_USER }}" \
             --from-literal=MassTransit__Password="${{ secrets.RABBITMQ_PASS }}" \
             --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create Grafana admin secret
+        run: |
+          kubectl create secret generic grafana-admin -n fgc \
+            --from-literal=admin-user=admin \
+            --from-literal=admin-password="${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
       
       - name: Apply deployments
         run: kubectl apply -f k8s/deployment.yaml
@@ -191,3 +199,4 @@ jobs:
           kubectl rollout status deployment/redis -n ${{ env.NAMESPACE }} --timeout=120s
           kubectl rollout status deployment/fgc-catalog-api -n ${{ env.NAMESPACE }} --timeout=240s
           kubectl rollout status deployment/fgc-users-api -n ${{ env.NAMESPACE }} --timeout=240s
+          kubectl rollout status deployment/grafana -n ${{ env.NAMESPACE }} --timeout=240s
