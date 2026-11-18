@@ -609,15 +609,15 @@ Neste vídeo são demonstrados: o painel do Azure e os pods no cluster, o Live D
 
 ## 📄 Relatório de Entrega
 
-|           Campo            |                     Valor                    |
-|----------------------------|----------------------------------------------|
-|**Projeto**                 | Tech Challenge – Turma 12NETT                |
-|**Integrante (Fases 3 e 4)**| Ronnam de Lima da Silva                      |
-|**Usernames no Discord**    | ronnam0093                                   |
-|**Data**                    | 17 de novembro de 2026                       |
-|**Documentação**            | Este README                                  |
-|**Repositórios**            | Links na seção [Repositórios](#-repositórios)|
-|**Vídeo Fase 1**            |https://www.youtube.com/watch?v=M7qFwoBctmA   |
-|**Vídeo Fase 2**            |https://www.youtube.com/watch?v=eiJI9z8NcI4   |
-|**Vídeo Fase 3**            | https://youtu.be/wBkjgqAAfH4                 |
-|**Vídeo Fase 4**            | [[LINK_DO_VIDEO_FASE_4]]                     |
+|           Campo            |                                       Valor                                        |
+|----------------------------|------------------------------------------------------------------------------------|
+|**Projeto**                 | Tech Challenge – Turma 12NETT                                                      |
+|**Integrante (Fases 3 e 4)**| Ronnam de Lima da Silva                                                            |
+|**Usernames no Discord**    | ronnam0093                                                                         |
+|**Data**                    | 17 de novembro de 2026                                                             |
+|**Documentação**            | Este README                                                                        |
+|**Repositórios**            | Links na seção [Repositórios](#-repositórios)                                      |
+|**Vídeo Fase 1**            |https://www.youtube.com/watch?v=M7qFwoBctmA                                         |
+|**Vídeo Fase 2**            |https://www.youtube.com/watch?v=eiJI9z8NcI4                                         |
+|**Vídeo Fase 3**            | https://youtu.be/wBkjgqAAfH4                                                       |
+|**Vídeo Fase 4**            | ttps://drive.google.com/drive/folders/1h_RENfZRfmpk8z1taRZc96tDaPXWxe-F?usp=sharing|
